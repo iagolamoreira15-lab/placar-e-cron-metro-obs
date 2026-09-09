@@ -1,8 +1,7 @@
 import { getStore } from "@netlify/blobs";
 
-const store = getStore("scoreboard");
-
 export default async (req) => {
+  const store = getStore("scoreboard");
   try {
     if (req.method === "GET") {
       const data = await store.get("state", { type: "json" });
