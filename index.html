@@ -9,16 +9,16 @@
 <button onclick="goal(1)">⚽ + Casa</button><button onclick="undo(1)">− Casa</button><button onclick="goal(2)">⚽ + Fora</button><button onclick="undo(2)">− Fora</button></section>
 <p class="msg" id="msg">Conectando...</p>
 <script>
-let H=0,A=0,s=0,running=false,t=null;
+let H=0,A=0,s=0,running=false,startAt=0;
 const $=id=>document.getElementById(id);
 async function get(){try{let r=await fetch('/api/score');let d=await r.json();H=d.homeScore??0;A=d.awayScore??0;s=d.seconds??0;running=!!d.running;render()}catch(e){$('msg').textContent='Erro ao conectar ao placar.'}}
 function render(){$('hs').textContent=H;$('as').textContent=A;$('msg').textContent=running?'⏱️ Cronômetro em andamento':'Pronto';}
 async function send(){await fetch('/api/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({home:$('home').value,away:$('away').value,competition:$('comp').value,period:$('period').value,added:Number($('added').value)||0,homeScore:H,awayScore:A,seconds:s,running})});render()}
 async function goal(x){x===1?H++:A++;await send()}
 async function undo(x){x===1?H=Math.max(0,H-1):A=Math.max(0,A-1);await send()}
-async function start(){running=true;await send()}
-async function pause(){running=false;await send()}
-async function resetClock(){s=0;await send()}
+async function start(){startAt=Date.now()-s*1000;running=true;await send()}
+async function pause(){if(running)s=Math.floor((Date.now()-startAt)/1000);running=false;await send()}
+async function resetClock(){s=0;startAt=Date.now();await send()}
 async function newGame(){H=0;A=0;s=0;running=false;$('period').value='1º TEMPO';$('added').value=0;await send()}
-setInterval(async()=>{if(running){s++;render();await send()}},1000);get();setInterval(get,2000);
+setInterval(async()=>{if(running){s=Math.floor((Date.now()-startAt)/1000);render();await send()}},1000);get();setInterval(get,2000);
 </script></body></html>
