@@ -1,0 +1,8 @@
+{
+  "name": "iagolucasfutebol-scoreboard",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "latest"
+  }
+}

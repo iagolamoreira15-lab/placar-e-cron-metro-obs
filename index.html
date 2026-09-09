@@ -1,0 +1,24 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Controle - IagoLucasFutebol</title>
+<style>body{font-family:Arial;background:#111;color:#fff;max-width:850px;margin:auto;padding:25px}section{background:#1d1d22;padding:20px;border-radius:14px;margin-bottom:15px}input,select,button{padding:10px;margin:5px;border-radius:8px}input,select{background:#08080a;color:#fff;border:1px solid #555}button{border:0;font-weight:bold;cursor:pointer}.score{font-size:38px;text-align:center}.msg{opacity:.8}</style></head><body>
+<h1>⚽ Controle — IagoLucasFutebol</h1>
+<section><h2>Partida</h2><input id="home" value="NAPOLI" placeholder="Casa"><input id="away" value="ARSENAL" placeholder="Fora"><input id="comp" value="CHAMPIONS LEAGUE" placeholder="Competição"><br>
+<select id="period"><option>1º TEMPO</option><option>INTERVALO</option><option>2º TEMPO</option><option>ENCERRADO</option></select>
+<input id="added" type="number" min="0" max="99" value="0" placeholder="Acréscimos"><br>
+<button onclick="send()">Atualizar</button><button onclick="start()">▶ Iniciar</button><button onclick="pause()">⏸ Pausar</button><button onclick="resetClock()">↺ Zerar tempo</button><button onclick="newGame()">🆕 Nova partida</button></section>
+<section><h2>Placar</h2><div class="score"><span id="hs">0</span> × <span id="as">0</span></div>
+<button onclick="goal(1)">⚽ + Casa</button><button onclick="undo(1)">− Casa</button><button onclick="goal(2)">⚽ + Fora</button><button onclick="undo(2)">− Fora</button></section>
+<p class="msg" id="msg">Conectando...</p>
+<script>
+let H=0,A=0,s=0,running=false,t=null;
+const $=id=>document.getElementById(id);
+async function get(){try{let r=await fetch('/api/score');let d=await r.json();H=d.homeScore??0;A=d.awayScore??0;s=d.seconds??0;running=!!d.running;render()}catch(e){$('msg').textContent='Erro ao conectar ao placar.'}}
+function render(){$('hs').textContent=H;$('as').textContent=A;$('msg').textContent=running?'⏱️ Cronômetro em andamento':'Pronto';}
+async function send(){await fetch('/api/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({home:$('home').value,away:$('away').value,competition:$('comp').value,period:$('period').value,added:Number($('added').value)||0,homeScore:H,awayScore:A,seconds:s,running})});render()}
+async function goal(x){x===1?H++:A++;await send()}
+async function undo(x){x===1?H=Math.max(0,H-1):A=Math.max(0,A-1);await send()}
+async function start(){running=true;await send()}
+async function pause(){running=false;await send()}
+async function resetClock(){s=0;await send()}
+async function newGame(){H=0;A=0;s=0;running=false;$('period').value='1º TEMPO';$('added').value=0;await send()}
+setInterval(async()=>{if(running){s++;render();if(s%2===0)await send()}},1000);get();setInterval(get,2000);
+</script></body></html>
