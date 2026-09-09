@@ -20,5 +20,5 @@ async function start(){running=true;await send()}
 async function pause(){running=false;await send()}
 async function resetClock(){s=0;await send()}
 async function newGame(){H=0;A=0;s=0;running=false;$('period').value='1º TEMPO';$('added').value=0;await send()}
-setInterval(async()=>{if(running){s++;render();if(s%2===0)await send()}},1000);get();setInterval(get,2000);
+setInterval(async()=>{await send()}},1000);get();setInterval(get,2000);
 </script></body></html>
