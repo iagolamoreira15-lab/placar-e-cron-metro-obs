@@ -1,24 +1,1346 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Controle - IagoLucasFutebol</title>
-<style>body{font-family:Arial;background:#111;color:#fff;max-width:850px;margin:auto;padding:25px}section{background:#1d1d22;padding:20px;border-radius:14px;margin-bottom:15px}input,select,button{padding:10px;margin:5px;border-radius:8px}input,select{background:#08080a;color:#fff;border:1px solid #555}button{border:0;font-weight:bold;cursor:pointer}.score{font-size:38px;text-align:center}.msg{opacity:.8}</style></head><body>
-<h1>⚽ Controle — IagoLucasFutebol</h1>
-<section><h2>Partida</h2><input id="home" value="NAPOLI" placeholder="Casa"><input id="away" value="ARSENAL" placeholder="Fora"><input id="comp" value="CHAMPIONS LEAGUE" placeholder="Competição"><br>
-<select id="period"><option>1º TEMPO</option><option>INTERVALO</option><option>2º TEMPO</option><option>ENCERRADO</option></select>
-<input id="added" type="number" min="0" max="99" value="0" placeholder="Acréscimos"><br>
-<button onclick="send()">Atualizar</button><button onclick="start()">▶ Iniciar</button><button onclick="pause()">⏸ Pausar</button><button onclick="resetClock()">↺ Zerar tempo</button><button onclick="newGame()">🆕 Nova partida</button></section>
-<section><h2>Placar</h2><div class="score"><span id="hs">0</span> × <span id="as">0</span></div>
-<button onclick="goal(1)">⚽ + Casa</button><button onclick="undo(1)">− Casa</button><button onclick="goal(2)">⚽ + Fora</button><button onclick="undo(2)">− Fora</button></section>
-<p class="msg" id="msg">Conectando...</p>
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>Controle - Iago Lucas Futebol</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:#080b12;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:25px;
+}
+
+h1{
+  margin:0 0 20px;
+  font-size:28px;
+}
+
+h2{
+  margin:0 0 15px;
+  font-size:20px;
+}
+
+h3{
+  margin:18px 0 10px;
+  font-size:16px;
+}
+
+section{
+  background:#111722;
+  border:1px solid #263044;
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:18px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+
+.grid3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+label{
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin-bottom:5px;
+  color:#bfc7d8;
+}
+
+input,
+select{
+  width:100%;
+  padding:11px;
+  border-radius:8px;
+  border:1px solid #39445a;
+  background:#080d16;
+  color:#fff;
+  font-size:14px;
+}
+
+input:focus,
+select:focus{
+  outline:none;
+  border-color:#6f8cff;
+}
+
+.scoreControl{
+  display:grid;
+  grid-template-columns:1fr 120px 1fr;
+  gap:15px;
+  align-items:end;
+}
+
+.scoreButtons{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+
+button{
+  border:0;
+  border-radius:8px;
+  padding:11px 15px;
+  background:#27334a;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  filter:brightness(1.2);
+}
+
+.primary{
+  background:#315bea;
+}
+
+.green{
+  background:#16804a;
+}
+
+.red{
+  background:#a83232;
+}
+
+.gray{
+  background:#4a5363;
+}
+
+.bigScore{
+  text-align:center;
+  font-size:34px;
+  font-weight:900;
+  padding:9px;
+  background:#080d16;
+  border-radius:10px;
+  border:1px solid #39445a;
+}
+
+.timerBox{
+  text-align:center;
+  background:#080d16;
+  border:1px solid #39445a;
+  border-radius:10px;
+  padding:15px;
+}
+
+.timer{
+  font-size:38px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.timerButtons{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.playerGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+
+.playerRow{
+  display:grid;
+  grid-template-columns:45px 1fr;
+  gap:8px;
+}
+
+.number{
+  text-align:center;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.status{
+  margin-top:15px;
+  padding:12px;
+  border-radius:8px;
+  background:#080d16;
+  color:#aeb8ca;
+}
+
+.notice{
+  background:#171e2b;
+  border-left:4px solid #496cff;
+  padding:12px;
+  margin-bottom:18px;
+  border-radius:6px;
+  color:#cbd3e3;
+  line-height:1.5;
+}
+
+@media(max-width:800px){
+
+  .grid,
+  .grid3,
+  .playerGrid,
+  .scoreControl{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⚽ Controle — Iago Lucas Futebol</h1>
+
+<div class="notice">
+Preencha as informações da partida abaixo. As alterações serão enviadas para o placar do OBS.
+</div>
+
+
+<!-- INFORMAÇÕES DA PARTIDA -->
+
+<section>
+
+<h2>🏆 Informações da partida</h2>
+
+<div class="grid">
+
+<div>
+<label>Competição</label>
+<input id="competition"
+value="CHAMPIONS LEAGUE"
+placeholder="Ex.: Brasileirão">
+</div>
+
+<div>
+<label>Rodada</label>
+<input id="round"
+value=""
+placeholder="Ex.: 10ª rodada">
+</div>
+
+</div>
+
+
+<div class="grid3">
+
+<div>
+<label>Estádio</label>
+<input id="stadium"
+value=""
+placeholder="Ex.: Mineirão">
+</div>
+
+<div>
+<label>Cidade</label>
+<input id="city"
+value=""
+placeholder="Ex.: Belo Horizonte">
+</div>
+
+<div>
+<label>Data</label>
+<input id="date"
+type="date">
+</div>
+
+</div>
+
+</section>
+
+
+<!-- TIMES -->
+
+<section>
+
+<h2>🆚 Times</h2>
+
+<div class="grid">
+
+<div>
+
+<h3>🏠 Time da casa</h3>
+
+<label>Nome</label>
+
+<input id="home"
+value="NAPOLI"
+placeholder="Nome do time">
+
+<br><br>
+
+<label>Cidade do time</label>
+
+<input id="homeCity"
+placeholder="Cidade">
+
+<br><br>
+
+<label>Escudo / símbolo</label>
+
+<input id="homeCrest"
+value="⚽"
+placeholder="Ex.: 🔵">
+
+</div>
+
+
+<div>
+
+<h3>✈️ Time visitante</h3>
+
+<label>Nome</label>
+
+<input id="away"
+value="ARSENAL"
+placeholder="Nome do time">
+
+<br><br>
+
+<label>Cidade do time</label>
+
+<input id="awayCity"
+placeholder="Cidade">
+
+<br><br>
+
+<label>Escudo / símbolo</label>
+
+<input id="awayCrest"
+value="⚽"
+placeholder="Ex.: 🔴">
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PLACAR E CRONÔMETRO -->
+
+<section>
+
+<h2>⏱️ Placar e cronômetro</h2>
+
+<div class="scoreControl">
+
+<div>
+
+<label>Gols do time da casa</label>
+
+<div class="bigScore" id="homeScoreDisplay">
+0
+</div>
+
+<div class="scoreButtons">
+
+<button onclick="goalHome()">⚽ + Casa</button>
+
+<button class="gray" onclick="undoHome()">− Casa</button>
+
+</div>
+
+</div>
+
+
+<div>
+
+<label>Período</label>
+
+<select id="period">
+
+<option>1º TEMPO</option>
+<option>INTERVALO</option>
+<option>2º TEMPO</option>
+<option>PRORROGAÇÃO</option>
+<option>ENCERRADO</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>Gols do visitante</label>
+
+<div class="bigScore" id="awayScoreDisplay">
+0
+</div>
+
+<div class="scoreButtons">
+
+<button onclick="goalAway()">⚽ + Fora</button>
+
+<button class="gray" onclick="undoAway()">− Fora</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<br>
+
+<div class="timerBox">
+
+<div class="timer" id="timer">
+00:00
+</div>
+
+<div class="timerButtons">
+
+<button class="green" onclick="startClock()">
+▶ Iniciar
+</button>
+
+<button class="red" onclick="pauseClock()">
+⏸ Pausar
+</button>
+
+<button class="gray" onclick="resetClock()">
+↺ Zerar
+</button>
+
+</div>
+
+</div>
+
+
+<br>
+
+<div class="grid">
+
+<div>
+
+<label>Acréscimos</label>
+
+<input
+id="added"
+type="number"
+min="0"
+max="99"
+value="0"
+>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- FORMAÇÕES -->
+
+<section>
+
+<h2>📋 Formações</h2>
+
+<div class="grid">
+
+<div>
+
+<label>Formação — Casa</label>
+
+<select id="homeFormation">
+
+<option>4-3-3</option>
+<option>4-2-3-1</option>
+<option>4-4-2</option>
+<option>4-1-4-1</option>
+<option>3-5-2</option>
+<option>3-4-3</option>
+<option>5-3-2</option>
+<option>5-4-1</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>Formação — Fora</label>
+
+<select id="awayFormation">
+
+<option>4-2-3-1</option>
+<option>4-3-3</option>
+<option>4-4-2</option>
+<option>4-1-4-1</option>
+<option>3-5-2</option>
+<option>3-4-3</option>
+<option>5-3-2</option>
+<option>5-4-1</option>
+
+</select>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- ESCALAÇÃO CASA -->
+
+<section>
+
+<h2>🔵 Escalação — Time da casa</h2>
+
+<div class="playerGrid" id="homePlayers"></div>
+
+<h3>👔 Técnico</h3>
+
+<input
+id="homeCoach"
+placeholder="Nome do técnico"
+>
+
+<h3>🪑 Reservas</h3>
+
+<div class="playerGrid" id="homeBench"></div>
+
+</section>
+
+
+<!-- ESCALAÇÃO FORA -->
+
+<section>
+
+<h2>🔴 Escalação — Time visitante</h2>
+
+<div class="playerGrid" id="awayPlayers"></div>
+
+<h3>👔 Técnico</h3>
+
+<input
+id="awayCoach"
+placeholder="Nome do técnico"
+>
+
+<h3>🪑 Reservas</h3>
+
+<div class="playerGrid" id="awayBench"></div>
+
+</section>
+
+
+<!-- BOTÕES -->
+
+<section>
+
+<h2>💾 Controle</h2>
+
+<div class="actions">
+
+<button class="primary" onclick="send()">
+💾 Atualizar placar
+</button>
+
+<button class="gray" onclick="newGame()">
+🆕 Nova partida
+</button>
+
+</div>
+
+<div class="status" id="status">
+Conectando ao placar...
+</div>
+
+</section>
+
+</div>
+
+
 <script>
-let H=0,A=0,s=0,running=false,startAt=0;
-const $=id=>document.getElementById(id);
-async function get(){try{let r=await fetch('/api/score');let d=await r.json();H=d.homeScore??0;A=d.awayScore??0;s=d.seconds??0;running=!!d.running;render()}catch(e){$('msg').textContent='Erro ao conectar ao placar.'}}
-function render(){$('hs').textContent=H;$('as').textContent=A;$('msg').textContent=running?'⏱️ Cronômetro em andamento':'Pronto';}
-async function send(){await fetch('/api/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({home:$('home').value,away:$('away').value,competition:$('comp').value,period:$('period').value,added:Number($('added').value)||0,homeScore:H,awayScore:A,seconds:s,running})});render()}
-async function goal(x){x===1?H++:A++;await send()}
-async function undo(x){x===1?H=Math.max(0,H-1):A=Math.max(0,A-1);await send()}
-async function start(){startAt=Date.now()-s*1000;running=true;await send()}
-async function pause(){if(running)s=Math.floor((Date.now()-startAt)/1000);running=false;await send()}
-async function resetClock(){s=0;startAt=Date.now();await send()}
-async function newGame(){H=0;A=0;s=0;running=false;$('period').value='1º TEMPO';$('added').value=0;await send()}
-setInterval(async()=>{if(running){s=Math.floor((Date.now()-startAt)/1000);render();await send()}},1000);get();setInterval(get,2000);
-</script></body></html>
+
+/* =========================
+   ESTADO DA PARTIDA
+========================= */
+
+let H = 0;
+let A = 0;
+
+let seconds = 0;
+
+let running = false;
+
+let startAt = 0;
+
+
+/* =========================
+   FUNÇÃO AUXILIAR
+========================= */
+
+const $ = id => document.getElementById(id);
+
+
+/* =========================
+   CRIAR CAMPOS DE JOGADORES
+========================= */
+
+function createPlayers(containerId,prefix,count){
+
+  const container = $(containerId);
+
+  container.innerHTML = '';
+
+  for(let i=1;i<=count;i++){
+
+    const row = document.createElement('div');
+
+    row.className = 'playerRow';
+
+    row.innerHTML = `
+      <input
+        class="number"
+        id="${prefix}Number${i}"
+        value="${i}"
+        type="number"
+      >
+
+      <input
+        id="${prefix}Player${i}"
+        placeholder="Jogador ${i}"
+      >
+    `;
+
+    container.appendChild(row);
+
+  }
+
+}
+
+
+/* TITULARES */
+
+createPlayers(
+  'homePlayers',
+  'home',
+  11
+);
+
+createPlayers(
+  'awayPlayers',
+  'away',
+  11
+);
+
+
+/* RESERVAS */
+
+createPlayers(
+  'homeBench',
+  'homeBench',
+  7
+);
+
+createPlayers(
+  'awayBench',
+  'awayBench',
+  7
+);
+
+
+/* =========================
+   PEGAR JOGADORES
+========================= */
+
+function getPlayers(prefix,count){
+
+  const players = [];
+
+  for(let i=1;i<=count;i++){
+
+    players.push({
+
+      number:Number(
+        $(prefix + 'Number' + i).value
+      ) || i,
+
+      name:
+        $(prefix + 'Player' + i).value
+
+    });
+
+  }
+
+  return players;
+
+}
+
+
+/* =========================
+   ENVIAR PARA API
+========================= */
+
+async function send(){
+
+  if(running){
+
+    seconds =
+      Math.floor(
+        (Date.now() - startAt) / 1000
+      );
+
+  }
+
+  const data = {
+
+    home: $('home').value,
+
+    away: $('away').value,
+
+    competition:
+      $('competition').value,
+
+    round:
+      $('round').value,
+
+    homeCity:
+      $('homeCity').value,
+
+    awayCity:
+      $('awayCity').value,
+
+    homeCrest:
+      $('homeCrest').value,
+
+    awayCrest:
+      $('awayCrest').value,
+
+    stadium:
+      $('stadium').value,
+
+    city:
+      $('city').value,
+
+    date:
+      $('date').value,
+
+    homeScore:H,
+
+    awayScore:A,
+
+    seconds:seconds,
+
+    running:running,
+
+    period:
+      $('period').value,
+
+    added:
+      Number($('added').value) || 0,
+
+    homeFormation:
+      $('homeFormation').value,
+
+    awayFormation:
+      $('awayFormation').value,
+
+    homePlayers:
+      getPlayers('home',11),
+
+    awayPlayers:
+      getPlayers('away',11),
+
+    homeCoach:
+      $('homeCoach').value,
+
+    awayCoach:
+      $('awayCoach').value,
+
+    homeBench:
+      getPlayers('homeBench',7),
+
+    awayBench:
+      getPlayers('awayBench',7)
+
+  };
+
+
+  try{
+
+    const response =
+      await fetch(
+        '/api/score',
+        {
+          method:'POST',
+
+          headers:{
+            'Content-Type':
+              'application/json'
+          },
+
+          body:
+            JSON.stringify(data)
+
+        }
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        'Erro HTTP ' + response.status
+      );
+
+    }
+
+
+    $('status').textContent =
+      '✅ Placar atualizado com sucesso.';
+
+  }catch(error){
+
+    $('status').textContent =
+      '❌ Erro ao conectar ao placar.';
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* =========================
+   CARREGAR DADOS EXISTENTES
+========================= */
+
+async function get(){
+
+  try{
+
+    const response =
+      await fetch(
+        '/api/score?x=' + Date.now(),
+        {
+          cache:'no-store'
+        }
+      );
+
+    const d =
+      await response.json();
+
+
+    H =
+      Number(d.homeScore) || 0;
+
+    A =
+      Number(d.awayScore) || 0;
+
+    seconds =
+      Number(d.seconds) || 0;
+
+    running =
+      !!d.running;
+
+
+    if(running){
+
+      startAt =
+        Date.now() - seconds * 1000;
+
+    }
+
+
+    $('home').value =
+      d.home || '';
+
+    $('away').value =
+      d.away || '';
+
+    $('competition').value =
+      d.competition || '';
+
+    $('round').value =
+      d.round || '';
+
+    $('homeCity').value =
+      d.homeCity || '';
+
+    $('awayCity').value =
+      d.awayCity || '';
+
+    $('homeCrest').value =
+      d.homeCrest || '⚽';
+
+    $('awayCrest').value =
+      d.awayCrest || '⚽';
+
+    $('stadium').value =
+      d.stadium || '';
+
+    $('city').value =
+      d.city || '';
+
+    $('date').value =
+      d.date || '';
+
+    $('period').value =
+      d.period || '1º TEMPO';
+
+    $('added').value =
+      d.added || 0;
+
+    $('homeFormation').value =
+      d.homeFormation || '4-3-3';
+
+    $('awayFormation').value =
+      d.awayFormation || '4-2-3-1';
+
+    $('homeCoach').value =
+      d.homeCoach || '';
+
+    $('awayCoach').value =
+      d.awayCoach || '';
+
+
+    loadPlayers(
+      d.homePlayers,
+      'home',
+      11
+    );
+
+    loadPlayers(
+      d.awayPlayers,
+      'away',
+      11
+    );
+
+    loadPlayers(
+      d.homeBench,
+      'homeBench',
+      7
+    );
+
+    loadPlayers(
+      d.awayBench,
+      'awayBench',
+      7
+    );
+
+
+    render();
+
+    $('status').textContent =
+      '🟢 Conectado ao placar.';
+
+  }catch(error){
+
+    $('status').textContent =
+      '❌ Não foi possível carregar o placar.';
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* =========================
+   CARREGAR JOGADORES
+========================= */
+
+function loadPlayers(players,prefix,count){
+
+  if(!Array.isArray(players)){
+    return;
+  }
+
+  for(let i=1;i<=count;i++){
+
+    const player =
+      players[i-1];
+
+    if(!player){
+      continue;
+    }
+
+    const numberField =
+      $(prefix + 'Number' + i);
+
+    const nameField =
+      $(prefix + 'Player' + i);
+
+
+    if(numberField){
+
+      numberField.value =
+        player.number || i;
+
+    }
+
+
+    if(nameField){
+
+      nameField.value =
+        player.name || '';
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
+function render(){
+
+  $('homeScoreDisplay').textContent =
+    H;
+
+  $('awayScoreDisplay').textContent =
+    A;
+
+
+  const currentSeconds =
+    running
+      ? Math.floor(
+          (Date.now() - startAt) / 1000
+        )
+      : seconds;
+
+
+  $('timer').textContent =
+    formatTime(currentSeconds);
+
+}
+
+
+/* =========================
+   FORMATAR TEMPO
+========================= */
+
+function formatTime(total){
+
+  const minutes =
+    Math.floor(total / 60);
+
+  const secs =
+    total % 60;
+
+  return String(minutes).padStart(2,'0')
+    + ':'
+    + String(secs).padStart(2,'0');
+
+}
+
+
+/* =========================
+   GOLS
+========================= */
+
+function goalHome(){
+
+  H++;
+
+  send();
+
+  render();
+
+}
+
+
+function undoHome(){
+
+  H =
+    Math.max(0,H-1);
+
+  send();
+
+  render();
+
+}
+
+
+function goalAway(){
+
+  A++;
+
+  send();
+
+  render();
+
+}
+
+
+function undoAway(){
+
+  A =
+    Math.max(0,A-1);
+
+  send();
+
+  render();
+
+}
+
+
+/* =========================
+   CRONÔMETRO
+========================= */
+
+function startClock(){
+
+  if(running){
+    return;
+  }
+
+  startAt =
+    Date.now() - seconds * 1000;
+
+  running = true;
+
+  send();
+
+}
+
+
+function pauseClock(){
+
+  if(running){
+
+    seconds =
+      Math.floor(
+        (Date.now() - startAt) / 1000
+      );
+
+  }
+
+  running = false;
+
+  send();
+
+  render();
+
+}
+
+
+function resetClock(){
+
+  seconds = 0;
+
+  running = false;
+
+  startAt = 0;
+
+  send();
+
+  render();
+
+}
+
+
+/* =========================
+   NOVA PARTIDA
+========================= */
+
+function newGame(){
+
+  if(!confirm(
+    'Começar uma nova partida e zerar o placar?'
+  )){
+    return;
+  }
+
+
+  H = 0;
+
+  A = 0;
+
+  seconds = 0;
+
+  running = false;
+
+  startAt = 0;
+
+
+  $('period').value =
+    '1º TEMPO';
+
+  $('added').value =
+    0;
+
+
+  $('home').value =
+    'CASA';
+
+  $('away').value =
+    'FORA';
+
+  $('competition').value =
+    'CAMPEONATO';
+
+  $('round').value =
+    '';
+
+  $('homeCity').value =
+    '';
+
+  $('awayCity').value =
+    '';
+
+  $('stadium').value =
+    '';
+
+  $('city').value =
+    '';
+
+  $('date').value =
+    '';
+
+  $('homeFormation').value =
+    '4-3-3';
+
+  $('awayFormation').value =
+    '4-2-3-1';
+
+  $('homeCoach').value =
+    '';
+
+  $('awayCoach').value =
+    '';
+
+
+  clearPlayers('home',11);
+
+  clearPlayers('away',11);
+
+  clearPlayers('homeBench',7);
+
+  clearPlayers('awayBench',7);
+
+
+  send();
+
+  render();
+
+}
+
+
+/* =========================
+   LIMPAR JOGADORES
+========================= */
+
+function clearPlayers(prefix,count){
+
+  for(let i=1;i<=count;i++){
+
+    const numberField =
+      $(prefix + 'Number' + i);
+
+    const nameField =
+      $(prefix + 'Player' + i);
+
+
+    if(numberField){
+
+      numberField.value =
+        i;
+
+    }
+
+
+    if(nameField){
+
+      nameField.value =
+        '';
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   ATUALIZAÇÃO DO TEMPO
+========================= */
+
+setInterval(
+  function(){
+
+    if(running){
+
+      seconds =
+        Math.floor(
+          (Date.now() - startAt) / 1000
+        );
+
+      render();
+
+    }
+
+  },
+  250
+);
+
+
+/* =========================
+   SALVAR TEMPO PERIODICAMENTE
+========================= */
+
+setInterval(
+  function(){
+
+    if(running){
+
+      send();
+
+    }
+
+  },
+  2000
+);
+
+
+/* =========================
+   INICIAR
+========================= */
+
+get();
+
+</script>
+
+</body>
+
+</html>
