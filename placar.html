@@ -806,8 +806,7 @@ renderPlayers(
       d.city || 'Cidade';
 
     document.getElementById('date').textContent =
-      d.date || 'DD/MM/AAAA';
-
+  d.date ? d.date.split('-').reverse().join('/') : 'DD/MM/AAAA';
 
   }catch(e){
 
