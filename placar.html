@@ -612,6 +612,55 @@ html,body{
 
 
 <script>
+  
+function renderPlayers(containerId, players){
+
+  const container =
+    document.getElementById(containerId);
+
+  if(!container){
+    return;
+  }
+
+  if(!Array.isArray(players)){
+    return;
+  }
+
+  container.innerHTML = '';
+
+  players.forEach(function(player){
+
+    if(!player){
+      return;
+    }
+
+    const row =
+      document.createElement('div');
+
+    row.className = 'player';
+
+    const number =
+      document.createElement('span');
+
+    number.className = 'number';
+
+    number.textContent =
+      player.number || '';
+
+    const name =
+      document.createElement('span');
+
+    name.textContent =
+      player.name || 'Jogador';
+
+    row.appendChild(number);
+    row.appendChild(name);
+
+    container.appendChild(row);
+
+  });
+
+}  
 
 async function load(){
 
@@ -689,6 +738,16 @@ async function load(){
 
     document.getElementById('awayCoach').textContent =
       d.awayCoach || 'Nome do técnico';
+    
+    renderPlayers(
+  'homePlayers',
+  d.homePlayers
+);
+
+renderPlayers(
+  'awayPlayers',
+  d.awayPlayers
+);
 
     document.getElementById('stadium').textContent =
       d.stadium || 'Nome do estádio';
