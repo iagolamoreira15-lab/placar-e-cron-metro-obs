@@ -1,5 +1,719 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Placar</title>
-<style>html,body{margin:0;background:transparent;overflow:hidden;font-family:Arial;color:#fff}#board{width:760px;margin:15px auto;background:rgba(8,8,12,.9);border-radius:16px;padding:15px 22px;text-shadow:0 2px 4px #000}.comp{text-align:center;font-size:15px;letter-spacing:1.5px;opacity:.8;margin-bottom:8px}.line{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}.team{text-align:center;font-size:26px;font-weight:800}.score{font-size:48px;font-weight:900;white-space:nowrap}.time{text-align:center;font-size:18px;font-weight:800;margin-top:7px}.period{text-align:center;font-size:12px;opacity:.7;margin-top:3px}</style></head><body><div id="board"><div class="comp" id="comp">CHAMPIONS LEAGUE</div><div class="line"><div class="team" id="home">NAPOLI</div><div class="score"><span id="hs">0</span> × <span id="as">0</span></div><div class="team" id="away">ARSENAL</div></div><div class="time">⏱️ <span id="clock">00:00</span><span id="add"></span></div><div class="period" id="period">1º TEMPO</div></div>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Iago Lucas Futebol - Placar</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:transparent;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#fff;
+}
+
+#overlay{
+  width:100vw;
+  height:100vh;
+  position:relative;
+  padding:28px;
+}
+
+/* FUNDO GERAL */
+.main{
+  width:100%;
+  height:100%;
+  position:relative;
+}
+
+/* TOPO */
+.top{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:70px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 28px;
+  background:rgba(7,10,18,.96);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+
+.competition{
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+
+.round{
+  font-size:17px;
+  opacity:.75;
+  font-weight:700;
+}
+
+/* CABEÇALHO DOS TIMES */
+.teams{
+  position:absolute;
+  top:88px;
+  left:0;
+  right:0;
+  height:110px;
+  display:grid;
+  grid-template-columns:1fr 240px 1fr;
+  gap:18px;
+}
+
+.teamBox{
+  background:rgba(7,10,18,.94);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  padding:18px 25px;
+}
+
+.teamBox.home{
+  justify-content:flex-start;
+}
+
+.teamBox.away{
+  justify-content:flex-end;
+  text-align:right;
+}
+
+.crest{
+  width:64px;
+  height:64px;
+  min-width:64px;
+  border-radius:50%;
+  background:linear-gradient(145deg,#172033,#080b12);
+  border:2px solid rgba(255,255,255,.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  margin-right:18px;
+}
+
+.away .crest{
+  margin-left:18px;
+  margin-right:0;
+  order:2;
+}
+
+.teamName{
+  font-size:28px;
+  font-weight:900;
+}
+
+.teamCity{
+  font-size:14px;
+  opacity:.65;
+  margin-top:5px;
+}
+
+/* PLACAR CENTRAL */
+.scoreBox{
+  background:rgba(5,8,15,.98);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 8px 35px rgba(0,0,0,.4);
+}
+
+.score{
+  font-size:54px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:2px;
+}
+
+.clock{
+  font-size:22px;
+  font-weight:900;
+  margin-top:8px;
+}
+
+.period{
+  font-size:13px;
+  opacity:.65;
+  margin-top:4px;
+  font-weight:700;
+}
+
+.added{
+  font-size:14px;
+  font-weight:800;
+  margin-top:2px;
+}
+
+/* ÁREA PRINCIPAL */
+.content{
+  position:absolute;
+  top:212px;
+  left:0;
+  right:0;
+  bottom:82px;
+  display:grid;
+  grid-template-columns:330px 1fr 330px;
+  gap:18px;
+}
+
+/* ESCALAÇÕES */
+.lineup{
+  background:rgba(7,10,18,.94);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  padding:18px;
+  overflow:hidden;
+}
+
+.lineupTitle{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.lineupTitle strong{
+  font-size:20px;
+}
+
+.formation{
+  font-size:13px;
+  padding:6px 10px;
+  border-radius:8px;
+  background:rgba(255,255,255,.08);
+  font-weight:800;
+}
+
+.players{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.player{
+  height:27px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 8px;
+  border-radius:7px;
+  background:rgba(255,255,255,.045);
+  font-size:13px;
+}
+
+.number{
+  width:22px;
+  font-weight:900;
+  opacity:.7;
+}
+
+.coach{
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid rgba(255,255,255,.1);
+  font-size:13px;
+  opacity:.8;
+}
+
+.bench{
+  margin-top:10px;
+  font-size:11px;
+  opacity:.55;
+  line-height:1.5;
+}
+
+/* ÁREA CENTRAL DA WEBCAM */
+.center{
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  min-width:0;
+}
+
+.webcamArea{
+  position:absolute;
+  left:7%;
+  right:7%;
+  top:5%;
+  bottom:17%;
+  border:2px dashed rgba(255,255,255,.14);
+  border-radius:18px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  color:rgba(255,255,255,.28);
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+/*
+  IMPORTANTE:
+  Essa área fica transparente.
+  No OBS você coloca sua webcam nessa região.
+*/
+
+.matchInfo{
+  position:absolute;
+  left:7%;
+  right:7%;
+  bottom:0;
+  height:72px;
+  background:rgba(7,10,18,.94);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:28px;
+  text-align:center;
+}
+
+.infoItem{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.infoLabel{
+  font-size:10px;
+  opacity:.5;
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+.infoValue{
+  font-size:14px;
+  font-weight:800;
+}
+
+/* RODAPÉ */
+.footer{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 25px;
+  background:rgba(7,10,18,.96);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+}
+
+.channel{
+  font-size:18px;
+  font-weight:1000;
+}
+
+.motto{
+  font-size:12px;
+  opacity:.6;
+  font-weight:700;
+}
+
+.instagram{
+  font-size:13px;
+  font-weight:800;
+  opacity:.8;
+}
+
+/* ADAPTAÇÃO PARA TELAS MENORES */
+@media(max-width:1200px){
+
+  #overlay{
+    padding:15px;
+  }
+
+  .content{
+    grid-template-columns:260px 1fr 260px;
+  }
+
+  .teamName{
+    font-size:21px;
+  }
+
+  .score{
+    font-size:44px;
+  }
+
+  .player{
+    font-size:11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="overlay">
+
+  <div class="main">
+
+    <!-- TOPO -->
+    <div class="top">
+      <div class="competition" id="comp">
+        NOME DA COMPETIÇÃO
+      </div>
+
+      <div class="round" id="round">
+        RODADA: —
+      </div>
+    </div>
+
+
+    <!-- TIMES + PLACAR -->
+    <div class="teams">
+
+      <div class="teamBox home">
+
+        <div class="crest">
+          ⚽
+        </div>
+
+        <div>
+          <div class="teamName" id="home">
+            CASA
+          </div>
+
+          <div class="teamCity" id="homeCity">
+            Cidade
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="scoreBox">
+
+        <div class="score">
+          <span id="hs">0</span>
+          <span> × </span>
+          <span id="as">0</span>
+        </div>
+
+        <div class="clock" id="clock">
+          00:00
+        </div>
+
+        <div class="period" id="period">
+          1º TEMPO
+        </div>
+
+        <div class="added" id="add">
+        </div>
+
+      </div>
+
+
+      <div class="teamBox away">
+
+        <div>
+
+          <div class="teamName" id="away">
+            FORA
+          </div>
+
+          <div class="teamCity" id="awayCity">
+            Cidade
+          </div>
+
+        </div>
+
+        <div class="crest">
+          ⚽
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- CONTEÚDO -->
+    <div class="content">
+
+
+      <!-- TIME DA CASA -->
+      <div class="lineup">
+
+        <div class="lineupTitle">
+
+          <strong>ESCALAÇÃO</strong>
+
+          <div class="formation" id="homeFormation">
+            4-3-3
+          </div>
+
+        </div>
+
+        <div class="players" id="homePlayers">
+
+          <div class="player"><span class="number">1</span> Goleiro</div>
+          <div class="player"><span class="number">2</span> Lateral-direito</div>
+          <div class="player"><span class="number">3</span> Zagueiro</div>
+          <div class="player"><span class="number">4</span> Zagueiro</div>
+          <div class="player"><span class="number">6</span> Lateral-esquerdo</div>
+          <div class="player"><span class="number">5</span> Volante</div>
+          <div class="player"><span class="number">8</span> Meio-campista</div>
+          <div class="player"><span class="number">10</span> Meio-campista</div>
+          <div class="player"><span class="number">7</span> Ponta-direita</div>
+          <div class="player"><span class="number">9</span> Atacante</div>
+          <div class="player"><span class="number">11</span> Ponta-esquerda</div>
+
+        </div>
+
+        <div class="coach">
+          👔 Técnico: <strong id="homeCoach">Nome do técnico</strong>
+        </div>
+
+        <div class="bench">
+          BANCO: 12 • 13 • 14 • 15 • 16 • 17 • 18
+        </div>
+
+      </div>
+
+
+      <!-- WEBCAM -->
+      <div class="center">
+
+        <div class="webcamArea">
+          ÁREA DA SUA WEBCAM<br>
+          COLOQUE A WEBCAM NESTE ESPAÇO NO OBS
+        </div>
+
+        <div class="matchInfo">
+
+          <div class="infoItem">
+
+            <div class="infoLabel">
+              Estádio
+            </div>
+
+            <div class="infoValue" id="stadium">
+              Nome do estádio
+            </div>
+
+          </div>
+
+
+          <div class="infoItem">
+
+            <div class="infoLabel">
+              Cidade
+            </div>
+
+            <div class="infoValue" id="city">
+              Cidade
+            </div>
+
+          </div>
+
+
+          <div class="infoItem">
+
+            <div class="infoLabel">
+              Data
+            </div>
+
+            <div class="infoValue" id="date">
+              DD/MM/AAAA
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- TIME VISITANTE -->
+      <div class="lineup">
+
+        <div class="lineupTitle">
+
+          <strong>ESCALAÇÃO</strong>
+
+          <div class="formation" id="awayFormation">
+            4-2-3-1
+          </div>
+
+        </div>
+
+        <div class="players" id="awayPlayers">
+
+          <div class="player"><span class="number">1</span> Goleiro</div>
+          <div class="player"><span class="number">2</span> Lateral-direito</div>
+          <div class="player"><span class="number">4</span> Zagueiro</div>
+          <div class="player"><span class="number">5</span> Zagueiro</div>
+          <div class="player"><span class="number">3</span> Lateral-esquerdo</div>
+          <div class="player"><span class="number">6</span> Volante</div>
+          <div class="player"><span class="number">8</span> Volante</div>
+          <div class="player"><span class="number">10</span> Meia</div>
+          <div class="player"><span class="number">7</span> Ponta-direita</div>
+          <div class="player"><span class="number">11</span> Ponta-esquerda</div>
+          <div class="player"><span class="number">9</span> Atacante</div>
+
+        </div>
+
+        <div class="coach">
+          👔 Técnico: <strong id="awayCoach">Nome do técnico</strong>
+        </div>
+
+        <div class="bench">
+          BANCO: 12 • 13 • 14 • 15 • 16 • 17 • 18
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- RODAPÉ -->
+    <div class="footer">
+
+      <div class="channel">
+        IAGO LUCAS FUTEBOL
+      </div>
+
+      <div class="motto">
+        FUTEBOL EM PRIMEIRO LUGAR
+      </div>
+
+      <div class="instagram">
+        @cortes.doiagolucasfutebol
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
-async function load(){try{let r=await fetch('/api/score?x='+Date.now(),{cache:'no-store'});let d=await r.json();document.getElementById('home').textContent=d.home||'CASA';document.getElementById('away').textContent=d.away||'FORA';document.getElementById('comp').textContent=d.competition||'COMPETIÇÃO';document.getElementById('hs').textContent=d.homeScore??0;document.getElementById('as').textContent=d.awayScore??0;let s=d.seconds??0;document.getElementById('clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');document.getElementById('add').textContent=Number(d.added)?' +'+d.added:'';document.getElementById('period').textContent=d.period||'1º TEMPO'}catch(e){}}load();setInterval(load,1000);
-</script></body></html>
+
+async function load(){
+
+  try{
+
+    const response = await fetch(
+      '/api/score?x=' + Date.now(),
+      {
+        cache:'no-store'
+      }
+    );
+
+    const d = await response.json();
+
+
+    /* DADOS QUE JÁ EXISTEM NA SUA API */
+
+    document.getElementById('home').textContent =
+      d.home || 'CASA';
+
+    document.getElementById('away').textContent =
+      d.away || 'FORA';
+
+    document.getElementById('comp').textContent =
+      d.competition || 'NOME DA COMPETIÇÃO';
+
+    document.getElementById('hs').textContent =
+      d.homeScore ?? 0;
+
+    document.getElementById('as').textContent =
+      d.awayScore ?? 0;
+
+
+    let s = d.seconds ?? 0;
+
+    document.getElementById('clock').textContent =
+      String(Math.floor(s / 60)).padStart(2,'0') +
+      ':' +
+      String(s % 60).padStart(2,'0');
+
+
+    document.getElementById('add').textContent =
+      Number(d.added)
+        ? '+' + d.added
+        : '';
+
+
+    document.getElementById('period').textContent =
+      d.period || '1º TEMPO';
+
+
+    /*
+      CAMPOS QUE VAMOS CONECTAR
+      AO NOVO PAINEL DE CONTROLE
+      NA PRÓXIMA ETAPA.
+    */
+
+    document.getElementById('round').textContent =
+      'RODADA: ' + (d.round || '—');
+
+    document.getElementById('homeCity').textContent =
+      d.homeCity || 'Cidade';
+
+    document.getElementById('awayCity').textContent =
+      d.awayCity || 'Cidade';
+
+    document.getElementById('homeFormation').textContent =
+      d.homeFormation || '4-3-3';
+
+    document.getElementById('awayFormation').textContent =
+      d.awayFormation || '4-2-3-1';
+
+    document.getElementById('homeCoach').textContent =
+      d.homeCoach || 'Nome do técnico';
+
+    document.getElementById('awayCoach').textContent =
+      d.awayCoach || 'Nome do técnico';
+
+    document.getElementById('stadium').textContent =
+      d.stadium || 'Nome do estádio';
+
+    document.getElementById('city').textContent =
+      d.city || 'Cidade';
+
+    document.getElementById('date').textContent =
+      d.date || 'DD/MM/AAAA';
+
+
+  }catch(e){
+
+    console.log('Erro ao carregar placar:',e);
+
+  }
+
+}
+
+
+load();
+
+setInterval(load,1000);
+
+</script>
+
+</body>
+</html>
